@@ -1,0 +1,38 @@
+[
+  {
+    "id": 1,
+    "wordCount": 10,
+    "timeRange": {
+      "start": 0,
+      "end": 3.5
+    },
+    "hasContext": {
+      "previous": false,
+      "next": true
+    }
+  },
+  {
+    "id": 2,
+    "wordCount": 10,
+    "timeRange": {
+      "start": 3.5,
+      "end": 6.6
+    },
+    "hasContext": {
+      "previous": true,
+      "next": true
+    }
+  },
+  {
+    "id": 3,
+    "wordCount": 7,
+    "timeRange": {
+      "start": 6.6,
+      "end": 8.8
+    },
+    "hasContext": {
+      "previous": true,
+      "next": false
+    }
+  }
+]
