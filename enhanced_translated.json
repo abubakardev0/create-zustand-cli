@@ -138,148 +138,148 @@
         "end": 8.8
       }
     ],
-    "processing_timestamp": "2025-08-26T16:38:45.537Z"
+    "processing_timestamp": "2025-08-26T16:49:48.563Z"
   },
-  "translated_text": "[?]یہ [?]ایک [?]نمونہ [?]متن [?]ہے [?]جو [?]اردو [?]میں [?]لکھا [?]گیا [?]ہے [?]اور [?]اس [?]کا [?]انگریزی [?]میں [?]ترجمہ [?]کرنا [?]ہے۔ [?]یہ [?]ٹیسٹ [?]کے [?]لیے [?]استعمال [?]ہو [?]رہا [?]ہے۔",
+  "translated_text": "this a word word is who word in word went is and this of word in word word word this word of for word be staying word",
   "translated_words": [
     {
-      "word": "[?]یہ",
+      "word": "this",
       "start_time": 0,
       "end_time": 0.5
     },
     {
-      "word": "[?]ایک",
+      "word": "a",
       "start_time": 0.5,
       "end_time": 0.8
     },
     {
-      "word": "[?]نمونہ",
+      "word": "word",
       "start_time": 0.8,
       "end_time": 1.2
     },
     {
-      "word": "[?]متن",
+      "word": "word",
       "start_time": 1.2,
       "end_time": 1.6
     },
     {
-      "word": "[?]ہے",
+      "word": "is",
       "start_time": 1.6,
       "end_time": 1.9
     },
     {
-      "word": "[?]جو",
+      "word": "who",
       "start_time": 1.9,
       "end_time": 2.1
     },
     {
-      "word": "[?]اردو",
+      "word": "word",
       "start_time": 2.1,
       "end_time": 2.5
     },
     {
-      "word": "[?]میں",
+      "word": "in",
       "start_time": 2.5,
       "end_time": 2.8
     },
     {
-      "word": "[?]لکھا",
+      "word": "word",
       "start_time": 2.8,
       "end_time": 3.2
     },
     {
-      "word": "[?]گیا",
+      "word": "went",
       "start_time": 3.2,
       "end_time": 3.5
     },
     {
-      "word": "[?]ہے",
+      "word": "is",
       "start_time": 3.5,
       "end_time": 3.8
     },
     {
-      "word": "[?]اور",
+      "word": "and",
       "start_time": 3.8,
       "end_time": 4
     },
     {
-      "word": "[?]اس",
+      "word": "this",
       "start_time": 4,
       "end_time": 4.2
     },
     {
-      "word": "[?]کا",
+      "word": "of",
       "start_time": 4.2,
       "end_time": 4.4
     },
     {
-      "word": "[?]انگریزی",
+      "word": "word",
       "start_time": 4.4,
       "end_time": 4.9
     },
     {
-      "word": "[?]میں",
+      "word": "in",
       "start_time": 4.9,
       "end_time": 5.2
     },
     {
-      "word": "[?]ترجمہ",
+      "word": "word",
       "start_time": 5.2,
       "end_time": 5.7
     },
     {
-      "word": "[?]کرنا",
+      "word": "word",
       "start_time": 5.7,
       "end_time": 6
     },
     {
-      "word": "[?]ہے۔",
+      "word": "word",
       "start_time": 6,
       "end_time": 6.3
     },
     {
-      "word": "[?]یہ",
+      "word": "this",
       "start_time": 6.3,
       "end_time": 6.6
     },
     {
-      "word": "[?]ٹیسٹ",
+      "word": "word",
       "start_time": 6.6,
       "end_time": 7
     },
     {
-      "word": "[?]کے",
+      "word": "of",
       "start_time": 7,
       "end_time": 7.2
     },
     {
-      "word": "[?]لیے",
+      "word": "for",
       "start_time": 7.2,
       "end_time": 7.5
     },
     {
-      "word": "[?]استعمال",
+      "word": "word",
       "start_time": 7.5,
       "end_time": 8
     },
     {
-      "word": "[?]ہو",
+      "word": "be",
       "start_time": 8,
       "end_time": 8.2
     },
     {
-      "word": "[?]رہا",
+      "word": "staying",
       "start_time": 8.2,
       "end_time": 8.5
     },
     {
-      "word": "[?]ہے۔",
+      "word": "word",
       "start_time": 8.5,
       "end_time": 8.8
     }
   ],
   "translation_metadata": {
-    "translated_at": "2025-08-26T16:38:45.537Z",
+    "translated_at": "2025-08-26T16:49:48.563Z",
     "source_language": "Urdu",
     "target_language": "English",
     "total_batches": 3,

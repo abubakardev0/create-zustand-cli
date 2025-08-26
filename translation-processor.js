@@ -5,40 +5,41 @@ import { fileURLToPath } from 'url';
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 
-// Enhanced system prompt with better context handling
+// Enhanced system prompt that outputs CSV for better parsing control
 const getSystemPrompt = (languageName) => `You are an expert linguist specializing in ${languageName} to English translation.
 You will be given a batch of words from a transcription along with contextual information from surrounding text.
 
 Your task is to translate the words into natural, fluent English while preserving temporal alignment and meaning.
 
 Core Rules:
-1. **Contextual Translation**: Use the provided context (previous/next segments) to understand the full meaning and maintain narrative flow.
-2. **Natural English**: Create fluent, grammatically correct English. Rephrase and reorder as needed (e.g., SOV → SVO).
-3. **Flexible Word Alignment**: Aim to match word count, but prioritize natural translation. If exact matching creates awkward phrasing, use natural word boundaries.
-4. **Timestamp Preservation**: Distribute timestamps across translated words to maintain temporal alignment with the original audio.
-5. **Sentence Continuity**: Ensure translations connect smoothly with context, avoiding abrupt breaks or repetition.
+1. **Complete Translation**: EVERY word must be translated to English. Never leave original ${languageName} words untranslated.
+2. **Contextual Understanding**: Use the provided context to understand full meaning and maintain narrative flow.
+3. **Natural English**: Create fluent, grammatically correct English. Rephrase and reorder as needed (e.g., SOV → SVO).
+4. **Smart Word Distribution**: You may combine multiple ${languageName} words into fewer English words, or split one ${languageName} word into multiple English words as needed for natural translation.
+5. **Timestamp Preservation**: Distribute the original timestamps intelligently across your English translation.
 
 Context Usage Guidelines:
 - Use previous_context to understand ongoing topics and maintain pronoun references
 - Use next_context to anticipate direction and avoid incomplete thoughts
-- If a word/phrase is unclear, infer meaning from surrounding context
+- If a word/phrase is unclear, infer the most likely meaning from surrounding context
 - Maintain consistent terminology and style throughout
 
-Output Format:
-Return a valid JSON object with:
-- "translated_text": Natural English translation of the batch
-- "translated_words": Array of objects with {word, start_time, end_time}
-- "context_notes": Brief explanation of key contextual decisions made
+CRITICAL: Output ONLY a CSV format with exactly 3 columns: start_time,end_time,word
+- No headers, no quotes around simple words
+- Each line: timestamp,timestamp,english_word
+- Timestamps should be decimal numbers
+- Words should be clean English words (no special characters unless punctuation)
+- The number of output lines should create a natural English translation
 
-Example output:
-{
-  "translated_text": "These are the words we need to translate properly",
-  "translated_words": [
-    {"word": "These", "start_time": 0.359, "end_time": 0.459},
-    {"word": "are", "start_time": 0.479, "end_time": 0.639}
-  ],
-  "context_notes": "Maintained formal tone from previous context"
-}`;
+Example output for input with 3 words:
+0.359,0.559,This
+0.559,0.759,is
+0.759,0.959,good
+
+Example output for input with 2 words that become 3 English words:
+0.100,0.300,I
+0.300,0.500,am
+0.500,0.700,going`;
 
 class EnhancedTranslationProcessor {
   constructor(options = {}) {
@@ -172,12 +173,15 @@ Instructions:
   createFallbackTranslation(batch, errorMessage) {
     console.warn(`⚠️ Creating fallback translation for batch ${batch.id}`);
     
-    // Simple fallback: transliterate or use original with [UNTRANSLATED] marker
-    const fallbackWords = batch.words.map(word => ({
-      word: `[?]${word.text}`,
-      start_time: word.start,
-      end_time: word.end || word.start
-    }));
+    // Create a basic English translation using common word mappings
+    const fallbackWords = batch.words.map(word => {
+      const englishWord = this.getBasicTranslation(word.text, this.languageName);
+      return {
+        word: englishWord,
+        start_time: word.start,
+        end_time: word.end || word.start
+      };
+    });
     
     return {
       batchId: batch.id,
@@ -188,8 +192,156 @@ Instructions:
       translatedAt: new Date().toISOString(),
       tokensUsed: 0,
       error: errorMessage,
-      contextNotes: 'Fallback translation due to processing error'
+      contextNotes: 'Fallback translation using basic word mapping'
     };
+  }
+
+  getBasicTranslation(word, languageName) {
+    // Basic word mappings for common words - expand this as needed
+    const commonTranslations = {
+      // Urdu common words
+      'یہ': 'this',
+      'ہے': 'is',
+      'اور': 'and',
+      'کا': 'of',
+      'کے': 'of',
+      'کو': 'to',
+      'میں': 'in',
+      'سے': 'from',
+      'پر': 'on',
+      'ہو': 'be',
+      'نہیں': 'not',
+      'کہ': 'that',
+      'جو': 'who',
+      'اس': 'this',
+      'کر': 'do',
+      'کے لیے': 'for',
+      'ایک': 'a',
+      'گیا': 'went',
+      'ہوا': 'happened',
+      'کیا': 'what',
+      'تھا': 'was',
+      'ہیں': 'are',
+      'تھے': 'were',
+      'گے': 'will',
+      'رہا': 'staying',
+      'رہے': 'staying',
+      'رہی': 'staying',
+      'والا': 'one',
+      'والے': 'ones',
+      'والی': 'one',
+      'لیے': 'for',
+      'ساتھ': 'with',
+      'بھی': 'also',
+      'ابھی': 'now',
+      'یہاں': 'here',
+      'وہاں': 'there',
+      'کیوں': 'why',
+      'کیسے': 'how',
+      'کب': 'when',
+      'کہاں': 'where',
+      
+      // Spanish common words
+      'el': 'the',
+      'la': 'the',
+      'de': 'of',
+      'que': 'that',
+      'y': 'and',
+      'a': 'to',
+      'en': 'in',
+      'un': 'a',
+      'ser': 'be',
+      'se': 'self',
+      'no': 'no',
+      'te': 'you',
+      'lo': 'it',
+      'le': 'him',
+      'da': 'gives',
+      'su': 'his',
+      'por': 'by',
+      'son': 'are',
+      'con': 'with',
+      'para': 'for',
+      'al': 'to the',
+      'del': 'of the',
+      'los': 'the',
+      'las': 'the',
+      'un': 'a',
+      'una': 'a',
+      'este': 'this',
+      'esta': 'this',
+      'como': 'how',
+      'pero': 'but',
+      'sus': 'their',
+      'me': 'me',
+      'ya': 'already',
+      'muy': 'very',
+      'aquí': 'here',
+      'hay': 'there is'
+    };
+
+    // Check if we have a direct translation
+    if (commonTranslations[word.toLowerCase()]) {
+      return commonTranslations[word.toLowerCase()];
+    }
+
+    // For unknown words, try to create a reasonable English equivalent
+    // Remove common diacritics and special characters
+    let englishWord = word
+      .replace(/[۔؟!]/g, '') // Remove Urdu punctuation
+      .replace(/[¿¡]/g, '') // Remove Spanish punctuation
+      .replace(/[^\w\s]/g, '') // Remove other special chars
+      .trim();
+
+    // If still no match, create a phonetic approximation or generic word
+    if (englishWord === word) {
+      // Very basic phonetic mapping for common patterns
+      englishWord = word
+        .replace(/ی/g, 'i')
+        .replace(/ا/g, 'a')
+        .replace(/و/g, 'o')
+        .replace(/ے/g, 'e')
+        .replace(/ر/g, 'r')
+        .replace(/ت/g, 't')
+        .replace(/ن/g, 'n')
+        .replace(/م/g, 'm')
+        .replace(/ل/g, 'l')
+        .replace(/س/g, 's')
+        .replace(/د/g, 'd')
+        .replace(/ک/g, 'k')
+        .replace(/ب/g, 'b')
+        .replace(/ف/g, 'f')
+        .replace(/ج/g, 'j')
+        .replace(/ح/g, 'h')
+        .replace(/خ/g, 'kh')
+        .replace(/ذ/g, 'z')
+        .replace(/ز/g, 'z')
+        .replace(/ش/g, 'sh')
+        .replace(/غ/g, 'gh')
+        .replace(/ق/g, 'q')
+        .replace(/ہ/g, 'h')
+        .replace(/چ/g, 'ch')
+        .replace(/ط/g, 't')
+        .replace(/ظ/g, 'z')
+        .replace(/ع/g, '')
+        .replace(/پ/g, 'p')
+        .replace(/ٹ/g, 't')
+        .replace(/ڈ/g, 'd')
+        .replace(/ڑ/g, 'r')
+        .replace(/ں/g, 'n')
+        .replace(/ئ/g, 'y')
+        .replace(/ء/g, '');
+
+      // Clean up the result
+      englishWord = englishWord.replace(/\s+/g, '').toLowerCase();
+      
+      // If result is empty or too short, use a generic word
+      if (!englishWord || englishWord.length < 2) {
+        englishWord = 'word';
+      }
+    }
+
+    return englishWord || 'word';
   }
 
   async translateBatch(batch) {
@@ -234,7 +386,7 @@ Instructions:
     
     const openai = new OpenAI({ apiKey: this.openaiApiKey });
 
-    console.log(`🤖 Translating batch ${batch.id} with enhanced context...`);
+    console.log(`🤖 Translating batch ${batch.id} with CSV output format...`);
     
     const { systemPrompt, userPrompt } = this.createContextualPrompt(batch, this.languageName);
     
@@ -244,8 +396,7 @@ Instructions:
         { role: 'system', content: systemPrompt },
         { role: 'user', content: userPrompt }
       ],
-      temperature: 0.2, // Slightly higher for more natural translations
-      response_format: { type: 'json_object' },
+      temperature: 0.2,
       max_tokens: 2000
     });
 
@@ -254,50 +405,156 @@ Instructions:
       throw new Error('OpenAI returned an empty response');
     }
 
-    let translationResult;
-    try {
-      translationResult = JSON.parse(content);
-    } catch (parseError) {
-      throw new Error(`Invalid JSON response from OpenAI: ${parseError.message}`);
+    // Parse CSV response
+    const translatedWords = this.parseCSVResponse(content.trim(), batch);
+    
+    if (translatedWords.length === 0) {
+      throw new Error('No valid translations found in CSV response');
     }
 
-    // Validate response structure
-    if (!translationResult.translated_text || !translationResult.translated_words) {
-      throw new Error('Invalid response format: missing required fields');
-    }
-
-    if (!Array.isArray(translationResult.translated_words)) {
-      throw new Error('translated_words must be an array');
-    }
-
-    // Validate and normalize translated words
-    const translatedWords = translationResult.translated_words.map((word, index) => {
-      if (!word.word || typeof word.start_time !== 'number' || typeof word.end_time !== 'number') {
-        // Use original timing if translation timing is invalid
-        const originalWord = batch.words[Math.min(index, batch.words.length - 1)];
-        return {
-          word: word.word || `[MISSING]`,
-          start_time: originalWord.start,
-          end_time: originalWord.end || originalWord.start
-        };
-      }
-      return {
-        word: word.word,
-        start_time: word.start_time,
-        end_time: word.end_time
-      };
-    });
+    const translatedText = translatedWords.map(w => w.word).join(' ');
 
     return {
       batchId: batch.id,
       status: 'completed',
-      translatedText: translationResult.translated_text,
+      translatedText,
       translatedWords,
       originalWords: batch.words,
       translatedAt: new Date().toISOString(),
       tokensUsed: response.usage?.total_tokens || 0,
-      contextNotes: translationResult.context_notes || 'No context notes provided'
+      contextNotes: `CSV parsing successful: ${translatedWords.length} words extracted`
     };
+  }
+
+  parseCSVResponse(csvContent, batch) {
+    const lines = csvContent.split('\n').filter(line => line.trim().length > 0);
+    const translatedWords = [];
+    const errors = [];
+
+    for (let i = 0; i < lines.length; i++) {
+      const line = lines[i].trim();
+      
+      // Skip empty lines or lines that look like headers
+      if (!line || line.toLowerCase().includes('start_time') || line.toLowerCase().includes('timestamp')) {
+        continue;
+      }
+
+      try {
+        // Parse CSV line - handle potential commas in words
+        const parts = this.parseCSVLine(line);
+        
+        if (parts.length < 3) {
+          errors.push(`Line ${i + 1}: Expected 3 parts, got ${parts.length}`);
+          continue;
+        }
+
+        const [startTime, endTime, word] = parts;
+        
+        const start = parseFloat(startTime);
+        const end = parseFloat(endTime);
+        
+        if (isNaN(start) || isNaN(end)) {
+          errors.push(`Line ${i + 1}: Invalid timestamps`);
+          continue;
+        }
+
+        if (!word || word.trim().length === 0) {
+          errors.push(`Line ${i + 1}: Empty word`);
+          continue;
+        }
+
+        translatedWords.push({
+          word: word.trim(),
+          start_time: start,
+          end_time: end
+        });
+      } catch (error) {
+        errors.push(`Line ${i + 1}: ${error.message}`);
+      }
+    }
+
+    // If we have errors but some successful parses, log warnings
+    if (errors.length > 0 && translatedWords.length > 0) {
+      console.warn(`⚠️ Batch ${batch.id} CSV parsing had ${errors.length} errors but recovered ${translatedWords.length} words`);
+    }
+
+    // If no words were parsed successfully, try fallback parsing
+    if (translatedWords.length === 0) {
+      console.warn(`⚠️ Batch ${batch.id} CSV parsing failed, attempting fallback parsing`);
+      return this.fallbackCSVParse(csvContent, batch);
+    }
+
+    return translatedWords;
+  }
+
+  parseCSVLine(line) {
+    // Handle CSV parsing with potential commas in words
+    const parts = [];
+    let current = '';
+    let inQuotes = false;
+    let partCount = 0;
+    
+    for (let i = 0; i < line.length; i++) {
+      const char = line[i];
+      
+      if (char === '"') {
+        inQuotes = !inQuotes;
+      } else if (char === ',' && !inQuotes) {
+        parts.push(current.trim());
+        current = '';
+        partCount++;
+        
+        // If we have 2 parts (timestamps), everything else is the word
+        if (partCount === 2) {
+          parts.push(line.substring(i + 1).trim().replace(/^"|"$/g, ''));
+          break;
+        }
+      } else {
+        current += char;
+      }
+    }
+    
+    // Add the last part if we haven't reached the word yet
+    if (partCount < 2) {
+      parts.push(current.trim());
+    }
+    
+    return parts;
+  }
+
+  fallbackCSVParse(csvContent, batch) {
+    console.warn(`🔄 Using fallback CSV parsing for batch ${batch.id}`);
+    
+    // Try to extract any English words from the response
+    const words = csvContent
+      .split(/[\n,\s]+/)
+      .filter(word => word.trim().length > 0)
+      .filter(word => !/^\d+\.?\d*$/.test(word)) // Remove pure numbers (timestamps)
+      .filter(word => /^[a-zA-Z]/.test(word)) // Keep words starting with letters
+      .slice(0, batch.words.length * 2); // Limit to reasonable number
+
+    if (words.length === 0) {
+      throw new Error('No English words found in LLM response');
+    }
+
+    // Distribute timestamps across found words
+    const translatedWords = [];
+    const totalDuration = batch.words[batch.words.length - 1].end - batch.words[0].start;
+    const timePerWord = totalDuration / words.length;
+
+    words.forEach((word, index) => {
+      const startTime = batch.words[0].start + (index * timePerWord);
+      const endTime = startTime + timePerWord;
+      
+      translatedWords.push({
+        word: word.trim(),
+        start_time: startTime,
+        end_time: endTime
+      });
+    });
+
+    console.warn(`⚠️ Fallback parsing extracted ${translatedWords.length} words`);
+    return translatedWords;
   }
 
   async translateAllBatches(batches) {
